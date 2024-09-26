@@ -84,4 +84,4 @@
         }
         echo 'document.open();document.write(`' . $api->pageHTML . '`);document.close();';
     }
-?>
+    
